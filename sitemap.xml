@@ -8,50 +8,8 @@
     <priority>1.0</priority>
     <image:image>
       <image:loc>https://pradipta2005.github.io/assets/my_image/Pass_photo.jpg</image:loc>
-      <image:title>Pradipta Khan (Mr. P.K) - Data Engineer &amp; Analytics Specialist</image:title>
-      <image:caption>Official portrait of Pradipta Khan</image:caption>
+      <image:title>Pradipta Khan (Mr. P.K) — Data Engineer &amp; Machine Learning Specialist</image:title>
+      <image:caption>Official portrait and portfolio of Pradipta Khan</image:caption>
     </image:image>
-  </url>
-  <url>
-    <loc>https://pradipta2005.github.io/#projects-showcase</loc>
-    <lastmod>2026-11-13</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://pradipta2005.github.io/#experience-section</loc>
-    <lastmod>2026-11-13</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://pradipta2005.github.io/#education-section</loc>
-    <lastmod>2026-11-13</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://pradipta2005.github.io/#certifications-section</loc>
-    <lastmod>2026-11-13</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://pradipta2005.github.io/#technical-skills</loc>
-    <lastmod>2026-11-13</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://pradipta2005.github.io/#about-profile</loc>
-    <lastmod>2026-11-13</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://pradipta2005.github.io/#contact</loc>
-    <lastmod>2026-11-13</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
   </url>
 </urlset>
