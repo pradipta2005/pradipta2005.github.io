@@ -1,0 +1,20 @@
+# robots.txt for Pradipta Khan (Mr. P.K) Portfolio
+# https://pradipta2005.github.io/
+
+User-agent: *
+Allow: /
+Disallow: /scratch/
+Disallow: /.gemini/
+
+# Priority Search Crawlers
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: Applebot
+Allow: /
+
+# Sitemap Location
+Sitemap: https://pradipta2005.github.io/sitemap.xml
