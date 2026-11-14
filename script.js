@@ -21,14 +21,18 @@ let soundEnabled = true;
 let audioCtx = null;
 
 function getAudioContext() {
-  if (!audioCtx) {
-    const AudioContextClass = typeof window !== 'undefined' ? (window.AudioContext || window.webkitAudioContext) : null;
-    if (AudioContextClass) {
-      audioCtx = new AudioContextClass();
+  try {
+    if (!audioCtx) {
+      const AudioContextClass = typeof window !== 'undefined' ? (window.AudioContext || window.webkitAudioContext) : null;
+      if (AudioContextClass) {
+        audioCtx = new AudioContextClass();
+      }
     }
-  }
-  if (audioCtx && audioCtx.state === 'suspended') {
-    audioCtx.resume();
+    if (audioCtx && audioCtx.state === 'suspended') {
+      audioCtx.resume().catch(() => {});
+    }
+  } catch (e) {
+    // Autoplay restrictions gracefully handled
   }
   return audioCtx;
 }
@@ -113,7 +117,7 @@ function playAssistantSound(type) {
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+function startPortfolio() {
   const initSteps = [
     ['Preloader', initPreloader],
     ['ThemeSystem', initThemeSystem],
@@ -148,7 +152,13 @@ document.addEventListener('DOMContentLoaded', () => {
       console.warn(`[Portfolio Init] ${name} caught:`, err);
     }
   });
-});
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', startPortfolio);
+} else {
+  startPortfolio();
+}
 
 /**
  * Sync email and profile links across the DOM.
@@ -1597,6 +1607,83 @@ function initScrollProgressAndDock() {
   const progressBar = document.getElementById('scroll-progress-bar');
   const dock = document.getElementById('floating-quick-dock');
   const topBtn = document.getElementById('dock-top-btn');
+  const zenBtn = document.getElementById('dock-zen-btn');
+  const zenOrb = document.getElementById('dock-zen-orb');
+
+  let isDockHovered = false;
+  let condenseTimeout = null;
+  let scrollTimeout = null;
+  let progressTicking = false;
+
+  // 1. Zen Focus Mode (User Collapse / Restore)
+  const ZEN_STORAGE_KEY = 'pk_dock_zen';
+  function setZenState(isZen, animate = true) {
+    if (!dock || !zenOrb) return;
+    if (isZen) {
+      dock.classList.add('is-zen-collapsed');
+      zenOrb.classList.add('is-visible');
+      try { sessionStorage.setItem(ZEN_STORAGE_KEY, '1'); } catch (e) {}
+      if (animate && typeof playKeySound === 'function') {
+        playKeySound(420, 'sine', 0.05);
+      }
+      if (animate && typeof showToast === 'function') {
+        showToast('Zen Focus Mode: Dock minimized (Click ✦ to restore)');
+      }
+    } else {
+      dock.classList.remove('is-zen-collapsed');
+      zenOrb.classList.remove('is-visible');
+      try { sessionStorage.removeItem(ZEN_STORAGE_KEY); } catch (e) {}
+      if (animate && typeof playKeySound === 'function') {
+        playKeySound(680, 'sine', 0.05);
+      }
+      if (animate && typeof showToast === 'function') {
+        showToast('Navigation Dock restored');
+      }
+    }
+  }
+
+  // Restore saved Zen state
+  try {
+    if (sessionStorage.getItem(ZEN_STORAGE_KEY) === '1') {
+      setZenState(true, false);
+    }
+  } catch (e) {}
+
+  if (zenBtn) {
+    zenBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setZenState(true, true);
+    });
+  }
+
+  if (zenOrb) {
+    zenOrb.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setZenState(false, true);
+    });
+  }
+
+  // 2. Hover & Interaction Telemetry
+  if (dock) {
+    dock.addEventListener('mouseenter', () => {
+      isDockHovered = true;
+      dock.classList.remove('is-condensed');
+      clearTimeout(condenseTimeout);
+    });
+    dock.addEventListener('mouseleave', () => {
+      isDockHovered = false;
+      if (window.scrollY > 120 && window.innerWidth > 768) {
+        clearTimeout(condenseTimeout);
+        condenseTimeout = setTimeout(() => {
+          if (window.scrollY > 120 && !isDockHovered) {
+            dock.classList.add('is-condensed');
+          }
+        }, 1200);
+      }
+    });
+  }
 
   function updateScroll() {
     const scrollTop = window.scrollY || document.documentElement.scrollTop;
@@ -1613,11 +1700,16 @@ function initScrollProgressAndDock() {
       } else {
         dock.classList.remove('is-scrolled');
       }
+
+      // Dynamic Island Auto-Condense: Tucks into aerodynamic pill while navigating
+      if (scrollTop > 120) {
+        dock.classList.add('is-condensed');
+      } else if (!isDockHovered && window.innerWidth > 768) {
+        dock.classList.remove('is-condensed');
+      }
     }
   }
 
-  let scrollTimeout;
-  let progressTicking = false;
   window.addEventListener('scroll', () => {
     if (!progressTicking) {
       requestAnimationFrame(() => {
@@ -1631,10 +1723,62 @@ function initScrollProgressAndDock() {
       clearTimeout(scrollTimeout);
       scrollTimeout = setTimeout(() => {
         dock.classList.remove('is-scrolling');
-      }, 220);
+      }, 200);
+
+      // Auto-expand after user stops scrolling for 2 seconds (desktop only)
+      if (window.innerWidth > 768) {
+        clearTimeout(condenseTimeout);
+        condenseTimeout = setTimeout(() => {
+          if (!isDockHovered && window.scrollY > 120) {
+            dock.classList.remove('is-condensed');
+          }
+        }, 2200);
+      }
     }
   }, { passive: true });
   updateScroll();
+
+  // 3. Smart Footer Clearance Observer
+  const footer = document.querySelector('.site-footer');
+  if (footer && 'IntersectionObserver' in window && dock) {
+    const footerObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          dock.classList.add('is-docked-footer');
+          if (zenOrb) zenOrb.classList.add('is-docked-footer');
+        } else {
+          dock.classList.remove('is-docked-footer');
+          if (zenOrb) zenOrb.classList.remove('is-docked-footer');
+        }
+      });
+    }, { threshold: 0.08 });
+    footerObserver.observe(footer);
+  }
+
+  // 4. Smart Modal & Overlay Auto-Hide Watcher
+  function checkOpenModals() {
+    if (!dock) return;
+    const hasOpenDialog = !!document.querySelector('dialog[open]');
+    const hasOpenChat = !!document.querySelector('.ai-chat-window.is-open');
+    const hasOpenDrawer = !!document.querySelector('#mobile-nav-drawer.is-open');
+    if (hasOpenDialog || hasOpenChat || hasOpenDrawer) {
+      dock.classList.add('is-hidden-by-modal');
+      if (zenOrb) zenOrb.classList.add('is-hidden-by-modal');
+    } else {
+      dock.classList.remove('is-hidden-by-modal');
+      if (zenOrb) zenOrb.classList.remove('is-hidden-by-modal');
+    }
+  }
+
+  // Observe DOM modal attribute changes for instant stealth transitions
+  const modalObserver = new MutationObserver(() => {
+    checkOpenModals();
+  });
+  modalObserver.observe(document.body, {
+    attributes: true,
+    subtree: true,
+    attributeFilter: ['open', 'class', 'aria-hidden']
+  });
 
   if (topBtn) {
     topBtn.addEventListener('click', (e) => {
@@ -1918,6 +2062,14 @@ function initPreloader() {
   let currentKeyIdx = -1;
   let bonusProgress = 0;
   let canvasAnimId = null;
+
+  // Fail-safe watchdog: under no circumstance should the user ever be trapped on preloader screen
+  const safetyWatchdog = setTimeout(() => {
+    if (!isDismissed) {
+      console.warn('[Preloader] Watchdog triggered dismiss fallback');
+      dismiss();
+    }
+  }, 4800);
 
   // Sound is strictly ON by default
   soundEnabled = true;
@@ -2450,6 +2602,7 @@ function initPreloader() {
   function dismiss() {
     if (isDismissed) return;
     isDismissed = true;
+    clearTimeout(safetyWatchdog);
 
     // Fast-forward UI state to 100%
     if (counterEl) counterEl.textContent = '100';
@@ -4072,7 +4225,8 @@ function initCertLightbox() {
 
   // Delegated click handler as backup
   document.addEventListener('click', (e) => {
-    const trigger = e.target.closest('.cert-inspect-btn');
+    if (!e || !e.target) return;
+    const trigger = e.target.closest ? e.target.closest('.cert-inspect-btn') : null;
     if (trigger) {
       e.preventDefault();
       const card = trigger.closest('.interactive-cert-card');
@@ -4085,6 +4239,7 @@ function initCertLightbox() {
 
   // Close when clicking dialog backdrop
   dialog.addEventListener('click', (e) => {
+    if (!e) return;
     const rect = dialog.getBoundingClientRect();
     const isInDialog = (
       e.clientX >= rect.left &&

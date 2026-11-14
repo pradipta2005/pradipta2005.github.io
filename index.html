@@ -297,6 +297,20 @@
     </svg>
   </aside>
 
+  <!-- Emergency Preloader Watchdog: guarantees site always unlocks even on throttled/blocked scripts -->
+  <script>
+    setTimeout(function() {
+      var pre = document.getElementById('site-preloader');
+      if (pre && !document.body.classList.contains('is-page-ready')) {
+        pre.classList.add('is-exiting');
+        document.body.classList.add('is-page-ready');
+        setTimeout(function() {
+          if (pre && pre.parentNode) pre.parentNode.removeChild(pre);
+        }, 900);
+      }
+    }, 4500);
+  </script>
+
   <!-- Right-Side Floating Section Indicator (Minimal Navigator) -->
   <nav class="side-section-indicator" aria-label="Page Sections Indicator">
     <a href="#" class="indicator-dot is-active" data-section="hero" title="Top / Intro"><span
@@ -2341,7 +2355,19 @@
     <a href="#" class="dock-btn dock-btn-top" id="dock-top-btn" aria-label="Back to top" title="Scroll to Top">
       <span class="dock-icon">↑</span>
     </a>
+
+    <!-- Zen Focus Mode (Minimize Dock) -->
+    <button type="button" class="dock-btn dock-btn-zen" id="dock-zen-btn" aria-label="Minimize navigation dock" title="Zen Focus Mode (Minimize Dock)">
+      <span class="dock-zen-icon" id="dock-zen-icon" aria-hidden="true">−</span>
+    </button>
   </aside>
+
+  <!-- Zen Focus Mode Floating Minimized Gem (Click to restore full dock) -->
+  <button type="button" class="dock-zen-orb" id="dock-zen-orb" aria-label="Restore Navigation Dock" title="Restore Navigation Dock">
+    <span class="zen-orb-ring" aria-hidden="true"></span>
+    <span class="zen-orb-icon" aria-hidden="true">✦</span>
+    <span class="zen-orb-label">Dock</span>
+  </button>
 
   <!-- Interactive Toast Notification -->
   <div id="toast-notification" class="toast-notification" role="status" aria-live="polite"></div>

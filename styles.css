@@ -4438,8 +4438,8 @@ body.is-page-ready .text-unmask-inner {
   align-items: center;
   gap: 5px;
   background: rgba(255, 255, 255, 0.94);
-  backdrop-filter: blur(16px) saturate(180%);
-  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(190%);
+  -webkit-backdrop-filter: blur(20px) saturate(190%);
   border: 1.5px solid #111111;
   border-radius: 999px;
   padding: 5px 7px;
@@ -4448,16 +4448,182 @@ body.is-page-ready .text-unmask-inner {
   opacity: 1;
   transform: translateY(0);
   pointer-events: auto;
-  transition: opacity 220ms ease, transform 220ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 220ms ease;
+  transition: opacity 280ms ease,
+              transform 360ms cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 280ms ease,
+              padding 320ms cubic-bezier(0.16, 1, 0.3, 1),
+              background 280ms ease,
+              border-color 280ms ease;
 }
 
-.floating-quick-dock.is-scrolling {
-  opacity: 0.85;
+/* Dynamic Island Auto-Condense (Stealth Mode on Scroll) */
+.floating-quick-dock.is-condensed {
+  padding: 4px 6px;
+  gap: 3px;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 6px 20px rgba(36, 28, 50, 0.12), 0 2px 0 #111111;
 }
 
-.floating-quick-dock:hover {
+.floating-quick-dock .dock-btn-text {
+  display: inline-block;
+  max-width: 120px;
+  opacity: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  transition: max-width 360ms cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 240ms ease,
+              margin 360ms ease;
+}
+
+/* When condensed while scrolling or on small viewports */
+.floating-quick-dock.is-condensed .dock-btn-text {
+  max-width: 0 !important;
+  opacity: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  pointer-events: none;
+}
+
+.floating-quick-dock.is-condensed .dock-btn {
+  padding: 6px !important;
+  min-width: 32px;
+  height: 32px;
+  justify-content: center;
+  gap: 0;
+}
+
+.floating-quick-dock.is-condensed .dock-btn-ai {
+  padding: 4px !important;
+  min-width: 32px;
+  height: 32px;
+}
+
+.floating-quick-dock.is-condensed .dock-sep {
+  height: 14px;
+  margin: 0 1px;
+}
+
+/* Seamless Dynamic Expansion on Hover / Focus */
+.floating-quick-dock:hover,
+.floating-quick-dock:focus-within {
   opacity: 1 !important;
   transform: translateY(0) scale(1) !important;
+  box-shadow: 0 14px 38px rgba(36, 28, 50, 0.2), 0 3px 0 #111111 !important;
+}
+
+.floating-quick-dock:hover .dock-btn-text,
+.floating-quick-dock:focus-within .dock-btn-text {
+  max-width: 120px !important;
+  opacity: 1 !important;
+}
+
+.floating-quick-dock:hover .dock-btn,
+.floating-quick-dock:focus-within .dock-btn {
+  padding: 6px 11px !important;
+  gap: 6px !important;
+  min-width: auto;
+  height: auto;
+}
+
+.floating-quick-dock:hover .dock-btn-ai,
+.floating-quick-dock:focus-within .dock-btn-ai {
+  padding: 4px 10px 4px 5px !important;
+  min-width: auto;
+  height: auto;
+}
+
+/* Zen Focus Mode: User explicitly collapsed dock */
+.floating-quick-dock.is-zen-collapsed {
+  transform: translateY(140%) scale(0.85) !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Smart Modal & Overlay Auto-Hide (Prevents any overlap with open dialogs) */
+.floating-quick-dock.is-hidden-by-modal {
+  transform: translateY(140%) scale(0.88) !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Smart Footer Clearance */
+.floating-quick-dock.is-docked-footer {
+  transform: translateY(10px) scale(0.94);
+  opacity: 0.65;
+}
+.floating-quick-dock.is-docked-footer:hover {
+  transform: translateY(0) scale(1) !important;
+  opacity: 1 !important;
+}
+
+/* Zen Focus Mode Floating Minimized Gem */
+.dock-zen-orb {
+  position: fixed;
+  bottom: clamp(16px, 2.4vw, 26px);
+  right: clamp(16px, 2.4vw, 28px);
+  z-index: 99998;
+  display: none;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(20px) saturate(190%);
+  -webkit-backdrop-filter: blur(20px) saturate(190%);
+  border: 1.5px solid #111111;
+  border-radius: 999px;
+  box-shadow: 0 10px 26px rgba(36, 28, 50, 0.16), 0 3px 0 #111111;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: #111111;
+  transform: scale(0.88);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 340ms cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 240ms ease,
+              background 140ms ease,
+              box-shadow 240ms ease;
+}
+
+.dock-zen-orb.is-visible {
+  display: inline-flex;
+  transform: scale(1);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.dock-zen-orb:hover {
+  background: #ffd98e;
+  transform: translateY(-2px) scale(1.04);
+  box-shadow: 0 14px 32px rgba(36, 28, 50, 0.22), 0 3px 0 #111111;
+}
+
+.zen-orb-icon {
+  color: #d96c9c;
+  font-size: 0.85rem;
+  display: inline-block;
+  animation: zenOrbSpin 6s linear infinite;
+}
+
+@keyframes zenOrbSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.dock-btn-zen {
+  padding: 6px 8px;
+  color: #666666;
+  font-size: 0.95rem;
+  font-weight: 900;
+  line-height: 1;
+  border-color: rgba(17, 17, 17, 0.25);
+  background: transparent;
+}
+.dock-btn-zen:hover {
+  background: #ffecf2;
+  color: #111111;
+  border-color: #111111;
 }
 
 .dock-ai-wrapper {
@@ -6217,26 +6383,56 @@ body.is-page-ready .text-unmask-inner {
     gap: 3px !important;
   }
 
+  .floating-quick-dock .dock-btn-text {
+    max-width: 0 !important;
+    opacity: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    pointer-events: none !important;
+  }
+
+  .floating-quick-dock .dock-btn {
+    padding: 6px !important;
+    min-width: 32px !important;
+    height: 32px !important;
+    justify-content: center !important;
+    gap: 0 !important;
+  }
+
+  .floating-quick-dock .dock-btn-ai {
+    padding: 4px !important;
+    min-width: 32px !important;
+    height: 32px !important;
+  }
+
   .floating-quick-dock.is-scrolling {
     transform: translateX(-50%) translateY(2px) scale(0.96) !important;
+    opacity: 0.75 !important;
   }
 
   .floating-quick-dock:hover {
+    transform: translateX(-50%) scale(1) !important;
+    opacity: 1 !important;
+  }
+
+  .floating-quick-dock.is-zen-collapsed,
+  .floating-quick-dock.is-hidden-by-modal {
+    transform: translateX(-50%) translateY(150%) scale(0.85) !important;
+  }
+
+  .dock-zen-orb {
+    bottom: 12px !important;
+    left: 50% !important;
+    right: auto !important;
+    transform: translateX(-50%) scale(0.88) !important;
+  }
+
+  .dock-zen-orb.is-visible {
     transform: translateX(-50%) scale(1) !important;
   }
 
   #dock-sound-text {
     display: none !important;
-  }
-
-  .dock-btn {
-    font-size: 0.72rem !important;
-    padding: 5px 8px !important;
-    gap: 4px !important;
-  }
-
-  .dock-btn-ai .dock-btn-text {
-    font-size: 0.72rem !important;
   }
 
   /* AI Chat Window Bottom Sheet */
@@ -7269,11 +7465,43 @@ body.is-page-ready .text-unmask-inner {
 
 /* Floating Quick Dock (Smoked Glass Dynamic Island) */
 [data-theme="dark"] .floating-quick-dock {
-  background: rgba(13, 15, 24, 0.82);
+  background: rgba(13, 15, 24, 0.84);
   backdrop-filter: blur(28px) saturate(200%);
   -webkit-backdrop-filter: blur(28px) saturate(200%);
   border: 1px solid rgba(255, 255, 255, 0.14);
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+[data-theme="dark"] .floating-quick-dock.is-condensed {
+  background: rgba(13, 15, 24, 0.78);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+
+[data-theme="dark"] .dock-zen-orb {
+  background: rgba(13, 15, 24, 0.88);
+  backdrop-filter: blur(28px) saturate(200%);
+  -webkit-backdrop-filter: blur(28px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #f8fafc;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.75), 0 0 16px rgba(217, 108, 156, 0.25);
+}
+
+[data-theme="dark"] .dock-zen-orb:hover {
+  background: #fbbf24;
+  color: #08090e;
+  border-color: #fbbf24;
+  box-shadow: 0 0 24px rgba(251, 191, 36, 0.5);
+}
+
+[data-theme="dark"] .dock-btn-zen {
+  color: rgba(255, 255, 255, 0.6);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+[data-theme="dark"] .dock-btn-zen:hover {
+  background: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.35);
 }
 
 [data-theme="dark"] .dock-btn {
