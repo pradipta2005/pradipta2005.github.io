@@ -1770,15 +1770,15 @@ function initScrollProgressAndDock() {
     }
   }
 
-  // Observe DOM modal attribute changes for instant stealth transitions
-  const modalObserver = new MutationObserver(() => {
-    checkOpenModals();
+  // Hook into dialog lifecycle events & clicks seamlessly with zero CPU load
+  document.querySelectorAll('dialog').forEach(d => {
+    d.addEventListener('close', checkOpenModals);
+    d.addEventListener('cancel', checkOpenModals);
   });
-  modalObserver.observe(document.body, {
-    attributes: true,
-    subtree: true,
-    attributeFilter: ['open', 'class', 'aria-hidden']
-  });
+  window.addEventListener('click', () => {
+    requestAnimationFrame(checkOpenModals);
+  }, { passive: true });
+  window.addEventListener('modalStateChange', checkOpenModals);
 
   if (topBtn) {
     topBtn.addEventListener('click', (e) => {
@@ -2671,9 +2671,9 @@ function initPreloader() {
   // Ample dwell time per word so all multilingual scripts are 100% clearly readable!
   let seenBefore = false;
   try { seenBefore = sessionStorage.getItem('pk_preloader_seen') === 'true'; } catch (e) {}
-  const duration = seenBefore ? 3200 : 4400;
+  const duration = seenBefore ? 1600 : 2500;
   const keyCount = keycaps.length; // 10
-  const beatInterval = duration / 11; // ~400ms per greeting milestone
+  const beatInterval = duration / 11; // ~227ms per greeting milestone
 
   let lastBeatTimestamp = 0;
   const startTime = performance.now();

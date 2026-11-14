@@ -881,7 +881,12 @@ section[id],
 /* Preloader Loaded Exit State (Upward Curtain Slide) */
 .site-preloader.is-exiting {
   transform: translateY(calc(-100% - clamp(120px, 18vh, 220px)));
-  pointer-events: none;
+  pointer-events: none !important;
+  opacity: 0;
+  visibility: hidden;
+  transition: transform 0.82s cubic-bezier(0.76, 0, 0.24, 1),
+              opacity 0.45s ease 0.38s,
+              visibility 0.82s ease;
 }
 
 @media (max-width: 600px) {
