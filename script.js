@@ -154,10 +154,16 @@ function startPortfolio() {
   });
 }
 
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', startPortfolio);
-} else {
+let portfolioInitialized = false;
+function safeStartPortfolio() {
+  if (portfolioInitialized) return;
+  portfolioInitialized = true;
   startPortfolio();
+}
+
+safeStartPortfolio();
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', safeStartPortfolio);
 }
 
 /**
@@ -681,8 +687,8 @@ function initThemeAdaptiveAtmosphere() {
     }
   }
 
-  // Pre-allocated collection of leaves
-  const leafCount = window.innerWidth < 768 ? 10 : 18;
+  // Pre-allocated collection of leaves (optimized density for buttery 60/120fps)
+  const leafCount = window.innerWidth < 768 ? 6 : 10;
   const leaves = [];
   for (let i = 0; i < leafCount; i++) {
     leaves.push(new KyotoLeaf(width, height, true));
@@ -1174,9 +1180,19 @@ function initThemeAdaptiveAtmosphere() {
   }
 
   // -------------------------------------------------------------------------
-  // High-Speed 60 FPS Render Loop
+  // High-Speed 60/120 FPS Render Loop (Adaptive Scroll Throttling)
   // -------------------------------------------------------------------------
   let ambientTime = 0;
+  let isPageScrolling = false;
+  let scrollPauseTimer = null;
+
+  window.addEventListener('scroll', () => {
+    isPageScrolling = true;
+    clearTimeout(scrollPauseTimer);
+    scrollPauseTimer = setTimeout(() => {
+      isPageScrolling = false;
+    }, 120);
+  }, { passive: true });
 
   function renderLoop() {
     if (document.hidden) {
@@ -1184,6 +1200,13 @@ function initThemeAdaptiveAtmosphere() {
       return;
     }
     ambientTime++;
+
+    // During active scroll, throttle canvas rendering to alternate frames to preserve 60/120fps compositor bandwidth
+    if (isPageScrolling && (ambientTime % 2 !== 0)) {
+      requestAnimationFrame(renderLoop);
+      return;
+    }
+
     ctx.clearRect(0, 0, width, height);
 
     const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
@@ -1331,19 +1354,30 @@ function initCustomCursor() {
   let mouseY = window.innerHeight / 2;
   let followerX = mouseX;
   let followerY = mouseY;
+  let isCursorLoopActive = false;
+
+  function scheduleCursorLoop() {
+    if (!isCursorLoopActive) {
+      isCursorLoopActive = true;
+      requestAnimationFrame(loop);
+    }
+  }
 
   window.addEventListener('mousemove', (e) => {
     mouseX = e.clientX;
     mouseY = e.clientY;
     dot.style.transform = `translate3d(${mouseX}px, ${mouseY}px, 0) translate(-50%, -50%)`;
+    scheduleCursorLoop();
   }, { passive: true });
 
   window.addEventListener('mousedown', () => {
     follower.classList.add('is-down');
+    scheduleCursorLoop();
   });
 
   window.addEventListener('mouseup', () => {
     follower.classList.remove('is-down');
+    scheduleCursorLoop();
   });
 
   // Interactive element hover handlers
@@ -1351,10 +1385,12 @@ function initCustomCursor() {
     el.addEventListener('mouseenter', () => {
       follower.classList.add('is-key-hover');
       if (label) label.textContent = 'PRESS';
+      scheduleCursorLoop();
     });
     el.addEventListener('mouseleave', () => {
       follower.classList.remove('is-key-hover');
       if (label) label.textContent = '';
+      scheduleCursorLoop();
     });
   });
 
@@ -1362,10 +1398,12 @@ function initCustomCursor() {
     el.addEventListener('mouseenter', () => {
       follower.classList.add('is-hovering');
       if (label) label.textContent = 'VIEW';
+      scheduleCursorLoop();
     });
     el.addEventListener('mouseleave', () => {
       follower.classList.remove('is-hovering');
       if (label) label.textContent = '';
+      scheduleCursorLoop();
     });
   });
 
@@ -1374,20 +1412,28 @@ function initCustomCursor() {
     el.addEventListener('mouseenter', () => {
       follower.classList.add('is-hovering');
       if (label) label.textContent = '';
+      scheduleCursorLoop();
     });
     el.addEventListener('mouseleave', () => {
       follower.classList.remove('is-hovering');
+      scheduleCursorLoop();
     });
   });
 
   function loop() {
-    followerX += (mouseX - followerX) * 0.18;
-    followerY += (mouseY - followerY) * 0.18;
-    follower.style.transform = `translate3d(${followerX.toFixed(2)}px, ${followerY.toFixed(2)}px, 0) translate(-50%, -50%)`;
+    const dx = mouseX - followerX;
+    const dy = mouseY - followerY;
+    if (Math.abs(dx) < 0.25 && Math.abs(dy) < 0.25) {
+      isCursorLoopActive = false;
+      return;
+    }
+    followerX += dx * 0.22;
+    followerY += dy * 0.22;
+    follower.style.transform = `translate3d(${followerX.toFixed(1)}px, ${followerY.toFixed(1)}px, 0) translate(-50%, -50%)`;
     requestAnimationFrame(loop);
   }
 
-  requestAnimationFrame(loop);
+  scheduleCursorLoop();
 }
 
 /**
@@ -1570,6 +1616,11 @@ function initCard3DTilt() {
 
     let isTicking = false;
     let latestE = null;
+    let cachedRect = null;
+
+    card.addEventListener('mouseenter', () => {
+      cachedRect = card.getBoundingClientRect();
+    }, { passive: true });
 
     card.addEventListener('mousemove', (e) => {
       latestE = e;
@@ -1577,7 +1628,7 @@ function initCard3DTilt() {
         isTicking = true;
         requestAnimationFrame(() => {
           if (latestE) {
-            const rect = card.getBoundingClientRect();
+            const rect = cachedRect || card.getBoundingClientRect();
             const x = latestE.clientX - rect.left;
             const y = latestE.clientY - rect.top;
 
@@ -1596,6 +1647,7 @@ function initCard3DTilt() {
     }, { passive: true });
 
     card.addEventListener('mouseleave', () => {
+      cachedRect = null;
       latestE = null;
       card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateZ(0)';
     });
@@ -1910,6 +1962,20 @@ function initScrollReveals() {
     return;
   }
 
+  // Live Bi-Directional Scroll Vector Tracker
+  let lastScrollY = window.scrollY;
+  let scrollDirection = 'down';
+
+  window.addEventListener('scroll', () => {
+    const curY = window.scrollY;
+    if (curY > lastScrollY + 2) {
+      scrollDirection = 'down';
+    } else if (curY < lastScrollY - 2) {
+      scrollDirection = 'up';
+    }
+    lastScrollY = curY;
+  }, { passive: true });
+
   // 1. Tag Section Containers with futuristic top laser line (structural only, never opacity: 0)
   const sections = document.querySelectorAll(
     '.projects-showcase-section, .experience-full-section, .education-full-section, .certifications-full-section, .skills-showcase-section, .about-profile-section, .contact-section'
@@ -1928,6 +1994,8 @@ function initScrollReveals() {
   const sectionObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
+        entry.target.classList.remove('direction-up', 'direction-down');
+        entry.target.classList.add(scrollDirection === 'down' ? 'direction-down' : 'direction-up');
         entry.target.classList.add('is-active-section');
       } else {
         entry.target.classList.remove('is-active-section');
@@ -1946,7 +2014,7 @@ function initScrollReveals() {
     h.classList.add('reveal-header');
   });
 
-  // 3. Staggered Cascades for Card Grids
+  // 3. Staggered Cascades for Card Grids (80ms rhythmic cadence)
   const cardContainers = [
     '.projects-grid',
     '.experience-timeline-container',
@@ -1960,7 +2028,7 @@ function initScrollReveals() {
     if (!container) return;
     Array.from(container.children).forEach((card, idx) => {
       card.classList.add('reveal-card');
-      card.style.setProperty('--reveal-stagger', `${(idx % 4) * 0.05}s`);
+      card.style.setProperty('--reveal-stagger', `${(idx % 3) * 0.08}s`);
     });
   });
 
@@ -1988,7 +2056,7 @@ function initScrollReveals() {
   });
 
   // 5. High-Precision Bi-Directional Intersection Observer
-  // With 140px rootMargin, priming and unrevealing occur completely offscreen
+  // Root margin -40px ensures animation activates right as elements enter the visible screen
   const revealObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       const target = entry.target;
@@ -1996,34 +2064,37 @@ function initScrollReveals() {
       const currentVh = window.innerHeight || document.documentElement.clientHeight;
 
       if (entry.isIntersecting) {
-        // Ensure ingress class matches entry side if transitioning from offscreen
-        if (rect.top > (currentVh * 0.5)) {
+        // Bi-Directional Ingress: adapt class to active scroll direction
+        if (scrollDirection === 'down' || rect.top > (currentVh * 0.45)) {
           target.classList.remove('ingress-down');
           target.classList.add('ingress-up');
         } else {
           target.classList.remove('ingress-up');
           target.classList.add('ingress-down');
         }
-        // Micro-turn animation on GPU compositor
+
+        // Two-frame compositor dispatch guarantees smooth animated interpolation
         requestAnimationFrame(() => {
-          target.classList.add('is-revealed');
+          requestAnimationFrame(() => {
+            target.classList.add('is-revealed');
+          });
         });
       } else {
-        // Exited outside rootMargin (140px offscreen) - reset for next directional pass
+        // Target exited viewport: reset is-revealed so it can re-animate dynamically on reverse scroll!
         target.classList.remove('is-revealed');
         if (rect.top >= currentVh) {
-          // Below the visible window: ready to glide UP when scrolling down
+          // Below the viewport: ready to glide UP when user scrolls down
           target.classList.remove('ingress-down');
           target.classList.add('ingress-up');
         } else if (rect.bottom <= 0) {
-          // Above the visible window: ready to glide DOWN when scrolling up
+          // Above the viewport: ready to glide DOWN when user scrolls back up
           target.classList.remove('ingress-up');
           target.classList.add('ingress-down');
         }
       }
     });
   }, {
-    rootMargin: '140px 0px 140px 0px',
+    rootMargin: '0px 0px -40px 0px',
     threshold: 0
   });
 
@@ -2069,7 +2140,7 @@ function initPreloader() {
       console.warn('[Preloader] Watchdog triggered dismiss fallback');
       dismiss();
     }
-  }, 4800);
+  }, 3800);
 
   // Sound is strictly ON by default
   soundEnabled = true;
@@ -2671,7 +2742,7 @@ function initPreloader() {
   // Ample dwell time per word so all multilingual scripts are 100% clearly readable!
   let seenBefore = false;
   try { seenBefore = sessionStorage.getItem('pk_preloader_seen') === 'true'; } catch (e) {}
-  const duration = seenBefore ? 1600 : 2500;
+  const duration = seenBefore ? 1400 : 2200;
   const keyCount = keycaps.length; // 10
   const beatInterval = duration / 11; // ~227ms per greeting milestone
 
@@ -3282,22 +3353,42 @@ function initSectionIndicator() {
   const cachedSections = sectionIds.map(id => {
     return {
       id,
-      el: id === 'hero' ? document.querySelector('.hero-section') : document.getElementById(id)
+      el: id === 'hero' ? document.querySelector('.hero-section') : document.getElementById(id),
+      top: 0
     };
   }).filter(item => item.el !== null);
 
+  function refreshSectionOffsets() {
+    cachedSections.forEach(item => {
+      if (item.el) {
+        const box = item.el.getBoundingClientRect();
+        item.top = box.top + window.scrollY;
+      }
+    });
+  }
+  refreshSectionOffsets();
+  window.addEventListener('resize', refreshSectionOffsets, { passive: true });
+
   let sectionScrollTicking = false;
+  let currentActiveSectionId = null;
+
   function onScroll() {
     const scrollPos = window.scrollY + window.innerHeight * 0.35;
 
+    let activeId = null;
     for (let i = cachedSections.length - 1; i >= 0; i--) {
       const item = cachedSections[i];
-      if (item.el && item.el.offsetTop <= scrollPos) {
-        dots.forEach(d => {
-          d.classList.toggle('is-active', d.getAttribute('data-section') === item.id);
-        });
+      if (item.top <= scrollPos) {
+        activeId = item.id;
         break;
       }
+    }
+
+    if (activeId && activeId !== currentActiveSectionId) {
+      currentActiveSectionId = activeId;
+      dots.forEach(d => {
+        d.classList.toggle('is-active', d.getAttribute('data-section') === activeId);
+      });
     }
     sectionScrollTicking = false;
   }
@@ -4012,9 +4103,26 @@ function initHeaderThemeObserver() {
   const navLinks = document.querySelectorAll('.site-nav .nav-link[data-section]');
   const sections = Array.from(navLinks).map(link => {
     const id = link.getAttribute('data-section');
-    return { id, link, el: document.getElementById(id) };
+    return { id, link, el: document.getElementById(id), top: 0 };
   }).filter(item => item.el !== null);
 
+  let cachedHeroBottom = 0;
+  function refreshHeaderMetrics() {
+    if (heroSection) {
+      const box = heroSection.getBoundingClientRect();
+      cachedHeroBottom = box.top + window.scrollY + heroSection.offsetHeight;
+    }
+    sections.forEach(item => {
+      if (item.el) {
+        const box = item.el.getBoundingClientRect();
+        item.top = box.top + window.scrollY;
+      }
+    });
+  }
+  refreshHeaderMetrics();
+  window.addEventListener('resize', refreshHeaderMetrics, { passive: true });
+
+  let currentNavActiveId = null;
   function updateNavScrollspy() {
     if (!sections.length) return;
     const scrollPosition = window.scrollY + 160;
@@ -4022,19 +4130,18 @@ function initHeaderThemeObserver() {
     let activeId = null;
     for (let i = sections.length - 1; i >= 0; i--) {
       const section = sections[i];
-      if (section.el.offsetTop <= scrollPosition) {
+      if (section.top <= scrollPosition) {
         activeId = section.id;
         break;
       }
     }
 
-    sections.forEach(item => {
-      if (item.id === activeId) {
-        item.link.classList.add('is-active');
-      } else {
-        item.link.classList.remove('is-active');
-      }
-    });
+    if (activeId !== currentNavActiveId) {
+      currentNavActiveId = activeId;
+      sections.forEach(item => {
+        item.link.classList.toggle('is-active', item.id === activeId);
+      });
+    }
   }
 
   // 3. Sticky Glass Elevation & Hero-Only Web Navbar Visibility with Creative Motion
@@ -4052,7 +4159,7 @@ function initHeaderThemeObserver() {
       // Dynamic Web Visibility: Navbar only visible in hero/top section on web (viewport > 960px)
       const isWeb = window.innerWidth > 960;
       if (isWeb && heroSection) {
-        const heroBottom = heroSection.offsetTop + heroSection.offsetHeight;
+        const heroBottom = cachedHeroBottom;
         // When user scrolls past hero section, hide navbar with creative atmospheric transition
         // Hysteresis (70px vs 130px) ensures silky performance without jitter
         if (scrollY > heroBottom - 70) {

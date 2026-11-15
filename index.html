@@ -297,18 +297,28 @@
     </svg>
   </aside>
 
-  <!-- Emergency Preloader Watchdog: guarantees site always unlocks even on throttled/blocked scripts -->
+  <!-- Instant Preloader Telemetry & Watchdog: guarantees immediate live clock & zero freeze -->
   <script>
-    setTimeout(function() {
-      var pre = document.getElementById('site-preloader');
-      if (pre && !document.body.classList.contains('is-page-ready')) {
-        pre.classList.add('is-exiting');
-        document.body.classList.add('is-page-ready');
-        setTimeout(function() {
-          if (pre && pre.parentNode) pre.parentNode.removeChild(pre);
-        }, 900);
-      }
-    }, 5500);
+    (function() {
+      try {
+        var clock = document.getElementById('preloader-clock');
+        if (clock) {
+          var now = new Date();
+          var timeStr = now.toLocaleTimeString('en-GB', { timeZone: 'Asia/Kolkata', hour12: false });
+          clock.textContent = (timeStr || 'ONLINE') + ' IST';
+        }
+      } catch (e) {}
+      setTimeout(function() {
+        var pre = document.getElementById('site-preloader');
+        if (pre && !document.body.classList.contains('is-page-ready')) {
+          pre.classList.add('is-exiting');
+          document.body.classList.add('is-page-ready');
+          setTimeout(function() {
+            if (pre && pre.parentNode) pre.parentNode.removeChild(pre);
+          }, 900);
+        }
+      }, 4000);
+    })();
   </script>
 
   <!-- Right-Side Floating Section Indicator (Minimal Navigator) -->

@@ -150,9 +150,11 @@ section[id],
   pointer-events: none;
   z-index: 999990;
   opacity: 0.032;
+  transform: translateZ(0);
+  contain: strict;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
   background-repeat: repeat;
-  /* mix-blend-mode removed for 60fps smoothness */}
+}
 
 /* --------------------------------------------------------------------------
    Editorial Preloader & Kinetic Multilingual Typographic Presentation
@@ -980,23 +982,25 @@ section[id],
   position: relative;
   width: 9px;
   height: 9px;
-  border-radius: 50%;
+  border-radius: 999px;
   background: rgba(36, 28, 50, 0.25);
   border: 1px solid rgba(17, 17, 17, 0.3);
   text-decoration: none;
-  transition: all 200ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 280ms cubic-bezier(0.16, 1, 0.3, 1);
   display: block;
 }
 
 .indicator-dot:hover {
   background: var(--color-accent-pink);
-  transform: scale(1.4);
+  transform: scale(1.3);
 }
 
 .indicator-dot.is-active {
-  background: #111111;
-  transform: scale(1.3);
-  box-shadow: 0 0 0 3px rgba(217, 108, 156, 0.35);
+  background: var(--color-accent-pink);
+  height: 22px;
+  border-radius: 999px;
+  transform: scale(1.15);
+  box-shadow: 0 0 14px rgba(217, 108, 156, 0.65), 0 0 0 2.5px rgba(217, 108, 156, 0.25);
 }
 
 .indicator-tooltip {
@@ -1494,6 +1498,8 @@ body.is-page-ready .text-unmask-inner {
   pointer-events: none;
   z-index: 6;
   opacity: 1;
+  transform: translateZ(0);
+  contain: strict;
   transition: opacity 360ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -1555,8 +1561,8 @@ body.is-page-ready .text-unmask-inner {
   top: 0;
   width: 100%;
   background: rgba(255, 255, 255, 0.82);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(14px) saturate(150%);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
   border-bottom: 1px solid rgba(36, 28, 50, 0.06);
   padding: 12px var(--page-padding-x);
   z-index: 100;
@@ -4443,8 +4449,8 @@ body.is-page-ready .text-unmask-inner {
   align-items: center;
   gap: 5px;
   background: rgba(255, 255, 255, 0.94);
-  backdrop-filter: blur(20px) saturate(190%);
-  -webkit-backdrop-filter: blur(20px) saturate(190%);
+  backdrop-filter: blur(14px) saturate(150%);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
   border: 1.5px solid #111111;
   border-radius: 999px;
   padding: 5px 7px;
@@ -4572,8 +4578,8 @@ body.is-page-ready .text-unmask-inner {
   gap: 6px;
   padding: 7px 14px;
   background: rgba(255, 255, 255, 0.94);
-  backdrop-filter: blur(20px) saturate(190%);
-  -webkit-backdrop-filter: blur(20px) saturate(190%);
+  backdrop-filter: blur(14px) saturate(150%);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
   border: 1.5px solid #111111;
   border-radius: 999px;
   box-shadow: 0 10px 26px rgba(36, 28, 50, 0.16), 0 3px 0 #111111;
@@ -4786,58 +4792,140 @@ body.is-page-ready .text-unmask-inner {
 }
 
 /* --------------------------------------------------------------------------
-   Bi-Directional Viewport Ingress Engine (Zero-Jank Hardware Acceleration)
+   Bi-Directional Viewport Ingress Engine (Award-Winning Spatial Physics)
    -------------------------------------------------------------------------- */
+.projects-grid,
+.experience-timeline-container,
+.education-cards-grid,
+.certifications-gallery-grid,
+.skills-domain-grid,
+.profile-card-grid,
+.editorial-section {
+  perspective: 1200px;
+  perspective-origin: center top;
+}
+
 .reveal-item,
 .reveal-card,
 .reveal-header {
   opacity: 0;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
-  will-change: transform, opacity;
-  transition: opacity 400ms cubic-bezier(0.16, 1, 0.3, 1),
-              transform 400ms cubic-bezier(0.16, 1, 0.3, 1);
+  transform-style: preserve-3d;
+  transition: opacity 640ms cubic-bezier(0.16, 1, 0.3, 1),
+              transform 720ms cubic-bezier(0.16, 1, 0.3, 1);
   transition-delay: var(--reveal-stagger, 0s);
 }
 
-/* Entering from Bottom (User Scrolling DOWN) */
+/* Entering from Bottom (User Scrolling DOWN -> Glide UP with 3D perspective pitch) */
 .reveal-item.ingress-up,
-.reveal-card.ingress-up,
+.reveal-card.ingress-up {
+  opacity: 0;
+  transform: translate3d(0, 54px, 0) scale(0.96) rotateX(4.5deg);
+}
+
 .reveal-header.ingress-up {
   opacity: 0;
-  transform: translate3d(0, 26px, 0);
+  transform: translate3d(0, 38px, 0) scale(0.98);
 }
 
-/* Entering from Top (User Scrolling UP) */
+/* Entering from Top (User Scrolling UP -> Glide DOWN with reverse 3D pitch) */
 .reveal-item.ingress-down,
-.reveal-card.ingress-down,
+.reveal-card.ingress-down {
+  opacity: 0;
+  transform: translate3d(0, -48px, 0) scale(0.96) rotateX(-4.5deg);
+}
+
 .reveal-header.ingress-down {
   opacity: 0;
-  transform: translate3d(0, -26px, 0);
+  transform: translate3d(0, -34px, 0) scale(0.98);
 }
 
-/* Active in-view state (Converges to origin with zero GPU overhead) */
+/* Active In-View State (Converges to origin with silky, locked precision) */
 .reveal-item.is-revealed,
 .reveal-card.is-revealed,
 .reveal-header.is-revealed {
   opacity: 1 !important;
-  transform: translate3d(0, 0, 0) !important;
+  transform: translate3d(0, 0, 0) scale(1) rotateX(0deg) !important;
 }
 
 /* Card cascade refinement */
 .reveal-card {
-  transition-duration: 440ms;
+  transition-duration: 760ms;
+}
+
+.reveal-header {
+  transition-duration: 620ms;
+}
+
+/* Section Header Inner Cascade */
+.reveal-header .section-title {
+  transform: translate3d(0, 20px, 0);
+  opacity: 0;
+  transition: transform 650ms cubic-bezier(0.16, 1, 0.3, 1) 90ms,
+              opacity 500ms ease 90ms;
+}
+
+.reveal-header.is-revealed .section-title {
+  transform: translate3d(0, 0, 0);
+  opacity: 1;
+}
+
+.reveal-header .section-lead {
+  transform: translate3d(0, 16px, 0);
+  opacity: 0;
+  transition: transform 650ms cubic-bezier(0.16, 1, 0.3, 1) 160ms,
+              opacity 500ms ease 160ms;
+}
+
+.reveal-header.is-revealed .section-lead {
+  transform: translate3d(0, 0, 0);
+  opacity: 1;
 }
 
 /* Section Header Entrance Tag Kinetic Pop */
-.reveal-header.is-revealed .tag-pill {
-  animation: kineticHeaderTagPop 500ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+.reveal-header .tag-pill {
+  display: inline-block;
+  transform: scale(0.9) translateY(4px);
+  opacity: 0.6;
+  transition: transform 550ms cubic-bezier(0.34, 1.56, 0.64, 1),
+              opacity 400ms ease;
 }
 
-@keyframes kineticHeaderTagPop {
-  0% { transform: scale(0.92); opacity: 0.7; }
-  60% { transform: scale(1.05); opacity: 1; }
-  100% { transform: scale(1); opacity: 1; }
+.reveal-header.is-revealed .tag-pill {
+  transform: scale(1) translateY(0);
+  opacity: 1;
+}
+
+/* Card Media Cinematic Optical Unmask */
+.reveal-card .project-media-wrap img,
+.reveal-card .cert-img-wrap img {
+  transform: scale(1.06);
+  transition: transform 900ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reveal-card.is-revealed .project-media-wrap img,
+.reveal-card.is-revealed .cert-img-wrap img {
+  transform: scale(1);
+}
+
+/* Card Tag Pill Spring Bounce on Ingress */
+.reveal-card .project-badge,
+.reveal-card .cert-badge-pill,
+.reveal-card .exp-role-badge,
+.reveal-card .project-category-tag {
+  transform: scale(0.92);
+  opacity: 0.7;
+  transition: transform 500ms cubic-bezier(0.34, 1.56, 0.64, 1) 120ms,
+              opacity 400ms ease 120ms;
+}
+
+.reveal-card.is-revealed .project-badge,
+.reveal-card.is-revealed .cert-badge-pill,
+.reveal-card.is-revealed .exp-role-badge,
+.reveal-card.is-revealed .project-category-tag {
+  transform: scale(1);
+  opacity: 1;
 }
 
 /* Parallax micro-drift on ambient decor */
@@ -4846,7 +4934,7 @@ body.is-page-ready .text-unmask-inner {
   transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Structural section container (always visible, handles laser scan) */
+/* Structural section container (handles 3D perspective and laser scan) */
 .editorial-section {
   position: relative;
 }
@@ -4857,20 +4945,29 @@ body.is-page-ready .text-unmask-inner {
   top: 0;
   left: 0;
   right: 0;
-  height: 2px;
+  height: 2.5px;
   background: linear-gradient(90deg, 
     transparent 0%, 
-    rgba(217, 108, 156, 0.15) 15%, 
-    rgba(217, 108, 156, 0.9) 50%, 
-    rgba(56, 189, 248, 0.9) 75%, 
+    rgba(217, 108, 156, 0.35) 15%, 
+    rgba(217, 108, 156, 0.95) 50%, 
+    rgba(56, 189, 248, 0.95) 85%, 
     transparent 100%
   );
+  box-shadow: 0 0 16px rgba(217, 108, 156, 0.6), 0 0 28px rgba(56, 189, 248, 0.4);
   transform: scaleX(0);
   transform-origin: left center;
-  transition: transform 850ms cubic-bezier(0.16, 1, 0.3, 1), opacity 500ms ease;
+  transition: transform 900ms cubic-bezier(0.16, 1, 0.3, 1), opacity 500ms ease;
   opacity: 0;
   pointer-events: none;
   z-index: 10;
+}
+
+.editorial-section.direction-up .section-active-border {
+  transform-origin: right center;
+}
+
+.editorial-section.direction-down .section-active-border {
+  transform-origin: left center;
 }
 
 .editorial-section.is-active-section .section-active-border {
@@ -5028,8 +5125,8 @@ body.is-page-ready .text-unmask-inner {
   width: min(400px, 92vw);
   height: min(560px, 76vh);
   background: rgba(255, 255, 255, 0.96);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(14px) saturate(150%);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
   border: 2px solid #111111;
   border-radius: 26px;
   box-shadow: 0 24px 60px rgba(36, 28, 50, 0.28), 0 6px 0 #111111;
@@ -6683,8 +6780,8 @@ body.is-page-ready .text-unmask-inner {
 /* Site Header */
 [data-theme="dark"] .site-header {
   background: rgba(8, 9, 14, 0.78);
-  backdrop-filter: blur(28px) saturate(190%);
-  -webkit-backdrop-filter: blur(28px) saturate(190%);
+  backdrop-filter: blur(14px) saturate(150%);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
   border-bottom: 1px solid rgba(255, 255, 255, 0.07);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
@@ -7258,8 +7355,8 @@ body.is-page-ready .text-unmask-inner {
 /* Certificate Full-Screen Lightbox */
 [data-theme="dark"] .cert-lightbox-card {
   background: rgba(15, 17, 26, 0.96);
-  backdrop-filter: blur(28px) saturate(200%);
-  -webkit-backdrop-filter: blur(28px) saturate(200%);
+  backdrop-filter: blur(14px) saturate(150%);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
   border: 1px solid rgba(255, 255, 255, 0.16);
   box-shadow: 0 30px 80px rgba(0, 0, 0, 0.85), inset 0 1px 0 rgba(255, 255, 255, 0.2);
   color: #f8fafc;
@@ -7471,8 +7568,8 @@ body.is-page-ready .text-unmask-inner {
 /* Floating Quick Dock (Smoked Glass Dynamic Island) */
 [data-theme="dark"] .floating-quick-dock {
   background: rgba(13, 15, 24, 0.84);
-  backdrop-filter: blur(28px) saturate(200%);
-  -webkit-backdrop-filter: blur(28px) saturate(200%);
+  backdrop-filter: blur(14px) saturate(150%);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
   border: 1px solid rgba(255, 255, 255, 0.14);
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.18);
 }
@@ -7484,8 +7581,8 @@ body.is-page-ready .text-unmask-inner {
 
 [data-theme="dark"] .dock-zen-orb {
   background: rgba(13, 15, 24, 0.88);
-  backdrop-filter: blur(28px) saturate(200%);
-  -webkit-backdrop-filter: blur(28px) saturate(200%);
+  backdrop-filter: blur(14px) saturate(150%);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
   border: 1px solid rgba(255, 255, 255, 0.18);
   color: #f8fafc;
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.75), 0 0 16px rgba(217, 108, 156, 0.25);
@@ -7558,8 +7655,8 @@ body.is-page-ready .text-unmask-inner {
 /* AI Portfolio Assistant Window */
 [data-theme="dark"] .ai-chat-window {
   background: rgba(15, 17, 26, 0.94);
-  backdrop-filter: blur(28px) saturate(200%);
-  -webkit-backdrop-filter: blur(28px) saturate(200%);
+  backdrop-filter: blur(14px) saturate(150%);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
   border: 1px solid rgba(255, 255, 255, 0.16);
   box-shadow: 0 24px 70px rgba(0, 0, 0, 0.85), inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
@@ -7650,8 +7747,8 @@ body.is-page-ready .text-unmask-inner {
 /* Mobile Drawer */
 [data-theme="dark"] .mobile-nav-panel {
   background: rgba(13, 15, 24, 0.96);
-  backdrop-filter: blur(28px);
-  -webkit-backdrop-filter: blur(28px);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   border-left: 1px solid rgba(255, 255, 255, 0.14);
   color: #f8fafc;
 }
@@ -7715,8 +7812,8 @@ body.is-page-ready .text-unmask-inner {
 /* Command Palette */
 [data-theme="dark"] .command-palette-dialog .palette-container {
   background: rgba(15, 17, 26, 0.94);
-  backdrop-filter: blur(28px);
-  -webkit-backdrop-filter: blur(28px);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   border: 1px solid rgba(255, 255, 255, 0.16);
   box-shadow: 0 30px 80px rgba(0, 0, 0, 0.85), inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
@@ -7768,7 +7865,9 @@ body.is-page-ready .text-unmask-inner {
 
 [data-theme="dark"] .indicator-dot.is-active {
   background: #f43f5e !important;
-  box-shadow: 0 0 14px rgba(244, 63, 94, 0.85) !important;
+  height: 22px !important;
+  border-radius: 999px !important;
+  box-shadow: 0 0 16px rgba(244, 63, 94, 0.95), 0 0 0 2.5px rgba(244, 63, 94, 0.3) !important;
 }
 
 /* --------------------------------------------------------------------------
@@ -7782,8 +7881,8 @@ body.is-page-ready .text-unmask-inner {
 
 [data-theme="dark"] .dialog-card {
   background: rgba(15, 17, 26, 0.94);
-  backdrop-filter: blur(28px) saturate(200%);
-  -webkit-backdrop-filter: blur(28px) saturate(200%);
+  backdrop-filter: blur(14px) saturate(150%);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
   border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 28px;
   box-shadow: 0 30px 80px rgba(0, 0, 0, 0.88), inset 0 1px 0 rgba(255, 255, 255, 0.2);
